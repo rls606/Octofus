@@ -25,6 +25,8 @@ namespace Octofus
 
         private ConfigurationViewModel _configurationViewModel;
 
+        private bool _isConfigurationOpen;
+
         public AppController()
         {
             System.Windows.Application.Current.Startup += Current_Startup; 
@@ -100,11 +102,22 @@ namespace Octofus
 
         private void OnConfigure(object sender, EventArgs e)
         {
-            var accounts = _processManager.GetRunningAccounts();
+            if (!_isConfigurationOpen)
+            {
+                var accounts = _processManager.GetRunningAccounts();
 
-            _configurationViewModel = new ConfigurationViewModel(this);
-            _configurationViewModel.FillViewModel(accounts, _configuration);
-            _configurationViewModel.Show();
+                _configurationViewModel = new ConfigurationViewModel(this);
+                _configurationViewModel.FillViewModel(accounts, _configuration);
+                _isConfigurationOpen = true;
+
+                var result = _configurationViewModel.ShowDialog();
+                if (result.HasValue && result.Value)
+                {
+                    SaveCharactersSettings(_configurationViewModel.GetSettings());
+                }
+
+                _isConfigurationOpen = false;
+            }
         }
 
         private void Reload()
@@ -122,11 +135,6 @@ namespace Octofus
 
         private void OnQuit(object sender, EventArgs e)
         {
-            if(_configurationViewModel != null)
-            {
-                _configurationViewModel.Close();
-            }
-
             UnregisterHotKeys();
             _processManager.Stop();
             _visualizer.Close();

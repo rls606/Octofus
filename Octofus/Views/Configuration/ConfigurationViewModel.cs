@@ -55,7 +55,8 @@ namespace Octofus.Views.Configuration
 
         private void ExecuteCancelCommand(object obj)
         {
-            Close();
+            View.DialogResult = false;
+            View.Close();
         }
 
         #endregion
@@ -64,21 +65,24 @@ namespace Octofus.Views.Configuration
 
         private void ExecuteSaveSettingsCommand(object obj)
         {
-            var settings = View.GetCharactersSettings();
-            SaveCharactersSettings(settings);
-
-            _exitWithoutSaving = false;
-            Close();
+            View.DialogResult = true;
+            View.Close();
         }
 
         #endregion
 
         #region Public methods
 
-        public void Show()
+        public bool? ShowDialog()
         {
-            View.Show();
             AppController.UnregisterHotKeys();
+            return View.ShowDialog();
+        }
+
+        public List<CharacterSettings> GetSettings()
+        {
+            var settings = View.GetCharactersSettings();
+            return settings;
         }
 
         public void FillViewModel(List<string> accounts, Settings configuration)
@@ -89,23 +93,13 @@ namespace Octofus.Views.Configuration
         #endregion
 
         private void SaveCharactersSettings(List<CharacterSettings> characterSettings) 
-        { 
-            AppController.SaveCharactersSettings(characterSettings);
-        }
-
-        public void Close()
         {
-            View.Close();
+            View.DialogResult = true;
+            AppController.SaveCharactersSettings(characterSettings);
         }
 
         private void OnClosing(object sender, CancelEventArgs e)
         {
-            if (_exitWithoutSaving)
-            {
-                AppController.RegisterHotKeys();
-            }
-
-            _exitWithoutSaving = true;
             View.Closing -= OnClosing;
         }
     }

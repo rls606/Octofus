@@ -126,7 +126,7 @@ namespace Octofus.Views.Visualizer
         private void AddNewPortraits(List<string> names)
         {
             for(var i = 0; i < names.Count; i++) {        
-                var portrait = new Portrait();
+                var portrait = new Portrait(names[i]);
                 portrait.SetImage(AppController.GetCharacterImage(names[i]));
                 Stack.Children.Insert(i, portrait);
             }

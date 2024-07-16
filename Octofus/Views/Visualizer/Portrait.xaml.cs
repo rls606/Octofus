@@ -22,11 +22,14 @@ namespace Octofus.Views.Visualizer
     /// </summary>
     public partial class Portrait : UserControl
     {
+        public string Name { get; set; }
+
         public int Order { get; set; }
 
-        public Portrait()
+        public Portrait(string name)
         {
             InitializeComponent();
+            Name = name;
             Border.Opacity = 0.5;
             Border.BorderBrush = Brushes.Black;
         }
