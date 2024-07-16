@@ -6,7 +6,20 @@
         xmlns:local="clr-namespace:Octofus.Views.Visualizer"
         Topmost="True" WindowStyle="None" AllowsTransparency="True" Background="{x:Null}"
         SizeToContent="WidthAndHeight" ShowInTaskbar="False" WindowStartupLocation="Manual">
-    <Border BorderBrush="Black" BorderThickness="2" Background="DarkGray" CornerRadius="5">
-        <WrapPanel x:Name="Stack" Margin="5" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
-    </Border>
+
+    <Border BorderThickness="2" CornerRadius="60, 60, 5, 5">
+            <Border.Background>
+                <SolidColorBrush Color="#e8989b" Opacity="0.4"/>
+            </Border.Background>
+            <Grid HorizontalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Image Grid.Row="0" Source="{Binding ImagePath}" Width="120" Height="80" Margin="0, 0, 0, -5"/>
+                
+                <WrapPanel Grid.Row="1" x:Name="Stack" VerticalAlignment="Center" HorizontalAlignment="Center" Width="105" Margin="2"/>
+            </Grid>
+        </Border>
 </Window>

@@ -12,5 +12,8 @@ namespace Octofus.Options.Configuration
 
         [XmlAttribute("key")]
         public string Key { get; set; }
+
+        [XmlAttribute("imagePath")]
+        public string ImagePath { get; set; }
     }
 }

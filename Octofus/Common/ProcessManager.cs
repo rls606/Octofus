@@ -147,6 +147,7 @@ namespace Octofus.Common
 
         public void Stop()
         {
+            _characterNames.Clear();
             _isRunning = false;
         }
 

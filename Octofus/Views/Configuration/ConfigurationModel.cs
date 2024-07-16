@@ -1,4 +1,5 @@
-﻿using Octofus.Utilities;
+﻿using Octofus.Options.Configuration;
+using Octofus.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,6 +26,25 @@ namespace Octofus.Views.Configuration
                 if (holderSaveSettingsCommand != value)
                 {
                     holderSaveSettingsCommand = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        #endregion
+
+        #region CancelCommand
+
+        private Command holderCancelCommand;
+
+        public Command CancelCommand
+        {
+            get { return holderCancelCommand; }
+            set
+            {
+                if (holderCancelCommand != value)
+                {
+                    holderCancelCommand = value;
                     OnPropertyChanged();
                 }
             }

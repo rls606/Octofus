@@ -1,4 +1,5 @@
-﻿using Octofus.Data;
+﻿using Octofus.Common;
+using Octofus.Data;
 using Octofus.Options.Configuration;
 using System;
 using System.Collections.Generic;
@@ -17,8 +18,11 @@ namespace Octofus.Views.Configuration
 
         public AppController AppController { get; set; }
 
+        private bool _exitWithoutSaving { get; set; }
+
         public ConfigurationViewModel(AppController controller)
         {
+            _exitWithoutSaving = true;
             AppController = controller;
             InitializeView();
             InitializeModel();
@@ -42,6 +46,16 @@ namespace Octofus.Views.Configuration
         private void InitializeCommands()
         {
             Model.SaveSettingsCommand = new Utilities.Command(ExecuteSaveSettingsCommand);
+            Model.CancelCommand = new Utilities.Command(ExecuteCancelCommand);
+        }
+
+        #endregion
+
+        #region CancelCommand
+
+        private void ExecuteCancelCommand(object obj)
+        {
+            Close();
         }
 
         #endregion
@@ -53,6 +67,7 @@ namespace Octofus.Views.Configuration
             var settings = View.GetCharactersSettings();
             SaveCharactersSettings(settings);
 
+            _exitWithoutSaving = false;
             Close();
         }
 
@@ -63,6 +78,7 @@ namespace Octofus.Views.Configuration
         public void Show()
         {
             View.Show();
+            AppController.UnregisterHotKeys();
         }
 
         public void FillViewModel(List<string> accounts, Settings configuration)
@@ -77,13 +93,19 @@ namespace Octofus.Views.Configuration
             AppController.SaveCharactersSettings(characterSettings);
         }
 
-        private void Close()
+        public void Close()
         {
             View.Close();
         }
 
         private void OnClosing(object sender, CancelEventArgs e)
         {
+            if (_exitWithoutSaving)
+            {
+                AppController.RegisterHotKeys();
+            }
+
+            _exitWithoutSaving = true;
             View.Closing -= OnClosing;
         }
     }

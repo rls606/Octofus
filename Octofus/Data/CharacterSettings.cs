@@ -11,5 +11,7 @@ namespace Octofus.Data
         public string Key { get; set; }
 
         public string AccountName { get; set; }
+
+        public string ImagePath { get; set; }
     }
 }

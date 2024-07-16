@@ -4,6 +4,9 @@
              xmlns:local="clr-namespace:Octofus"
              ShutdownMode="OnLastWindowClose">
     <Application.Resources>
-         
+       
+
+       
+
     </Application.Resources>
 </Application>

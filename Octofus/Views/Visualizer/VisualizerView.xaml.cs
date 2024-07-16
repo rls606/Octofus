@@ -2,10 +2,12 @@
 using Octofus.Data;
 using Octofus.Options;
 using Octofus.Options.Configuration;
+using Octofus.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,14 +26,33 @@ namespace Octofus.Views.Visualizer
     /// </summary>
     public partial class VisualizerView : Window
     {
+        #region ImagePath
+
+        public string ImagePath
+        {
+            get { return (string)GetValue(ImagePathProperty); }
+            set { SetValue(ImagePathProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ImagePath.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ImagePathProperty =
+            DependencyProperty.Register("ImagePath", typeof(string), typeof(Portrait), new PropertyMetadata(string.Empty));
+
+        #endregion
+
+        private AppController AppController { get; set; } 
         private bool isDragging { get; set; }
 
         private Point offset { get; set; }
 
-        public VisualizerView(WindowPosition windowPosition)
+        public VisualizerView(WindowPosition windowPosition, AppController appController)
         {
             InitializeComponent();
             ApplyConfiguration(windowPosition);
+            this.DataContext = this;
+
+            var path = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            ImagePath = System.IO.Path.Combine(path, "assets", "logo.png");
 
             isDragging = false;
 
@@ -41,6 +62,7 @@ namespace Octofus.Views.Visualizer
             MouseLeftButtonDown += VisualizerView_MouseLeftButtonDown;
             MouseLeftButtonUp += VisualizerView_MouseLeftButtonUp;
             MouseMove += VisualizerView_MouseMove;
+            AppController = appController;
         }
 
         #region MovingWindow
@@ -105,7 +127,7 @@ namespace Octofus.Views.Visualizer
         {
             for(var i = 0; i < names.Count; i++) {        
                 var portrait = new Portrait();
-                portrait.SetImage(names[i]);
+                portrait.SetImage(AppController.GetCharacterImage(names[i]));
                 Stack.Children.Insert(i, portrait);
             }
         }
@@ -159,16 +181,16 @@ namespace Octofus.Views.Visualizer
 
         private void AdjustWindowSize(int portraitNumber)
         {
-            if (portraitNumber == 0)
-            {
-                Width = 0;
-                Height = 0;
-            }
-            else
-            {
-                Width = (50 + 5) * portraitNumber;
-                Height = (210 + 5) * portraitNumber;
-            }
+            //if (portraitNumber == 0)
+            //{
+            //    Width = 0;
+            //    Height = 0;
+            //}
+            //else
+            //{
+            //    Width = (50 + 5) * portraitNumber;
+            //    Height = (210 + 5) * portraitNumber;
+            //}
         }
 
         private void SavePosition()

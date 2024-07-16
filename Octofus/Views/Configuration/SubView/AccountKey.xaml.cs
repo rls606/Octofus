@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace Octofus.Views.Configuration.SubView
 {
@@ -20,16 +14,38 @@ namespace Octofus.Views.Configuration.SubView
     /// </summary>
     public partial class AccountKey : UserControl
     {
-        private string Key { get; set; }
+        #region ImagePath
 
-        private string AccountName { get; set; }
+        public BitmapImage Image
+        {
+            get { return (BitmapImage)GetValue(ImageProperty); }
+            set { SetValue(ImageProperty, value); }
+        }
 
-        public AccountKey(List<string> items, string accountName, string key)
+        // Using a DependencyProperty as the backing store for Image.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ImageProperty =
+            DependencyProperty.Register("Image", typeof(BitmapImage), typeof(AccountKey), new PropertyMetadata(null));
+
+        #endregion
+
+        private AccountKeyInformations _informations { get; set; }
+
+        public event EventHandler RemoveRequested;
+
+        private void OnRemoveAccount(object sender, RoutedEventArgs e)
+        {
+            RemoveRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        public AccountKey(List<string> items, string accountName, string key, string imagePath)
         { 
             InitializeComponent();
+            _informations = new AccountKeyInformations();
+            _informations.Key = key;
+            _informations.AccountName = accountName;
+            _informations.ImagePath = imagePath;
 
-            Key = key;
-            AccountName = accountName;
+            InitializePictures(imagePath);
 
             if (string.IsNullOrWhiteSpace(key))
             {
@@ -43,9 +59,52 @@ namespace Octofus.Views.Configuration.SubView
             comboBox.SelectionChanged += ComboBox_SelectionChanged;
         }
 
+        private void InitializePictures(string imagePath)
+        {
+            var path = string.Empty;
+            if(!string.IsNullOrWhiteSpace(imagePath))
+            {
+                path = imagePath;
+            }
+            else
+            {
+                var executingPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                path = Path.Combine(executingPath, "Images", "nopic.png");
+            }
+
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(path);
+            bitmap.DecodePixelWidth = 200;
+            bitmap.EndInit();
+
+            avatar.Source = bitmap;
+        }
+
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            AccountName = comboBox.SelectedItem as string;
+            _informations.AccountName = comboBox.SelectedItem as string;
+        }
+
+        private void OnAddImage(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.DefaultExt = ".png"; 
+            dialog.Filter = "png file (.png)|*.png";      
+            var result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(dialog.FileName);
+                bitmap.DecodePixelWidth = 200;
+                bitmap.EndInit();
+
+                Console.WriteLine((int)bitmap.PixelHeight);
+                Console.WriteLine((int)bitmap.PixelWidth);
+                avatar.Source = bitmap;
+                _informations.ImagePath = dialog.FileName;
+            }
         }
 
         private void OnAssignKey(object sender, RoutedEventArgs e)
@@ -58,15 +117,15 @@ namespace Octofus.Views.Configuration.SubView
         {
             var pressedKey = e.Key.ToString();
             button.Content = pressedKey;
-            Key = pressedKey;
+            _informations.Key = pressedKey;
             this.KeyDown -= AccountKey_KeyDown;
         }
 
-        public Tuple<string, string> GetAccountBinding()
+        public AccountKeyInformations GetAccountBinding()
         {
-            if (!string.IsNullOrWhiteSpace(Key) && !string.IsNullOrWhiteSpace(AccountName)) 
-            { 
-                return Tuple.Create(Key, AccountName);
+            if (_informations.IsInformationsValid()) 
+            {
+                return _informations;
             }
 
             return null;

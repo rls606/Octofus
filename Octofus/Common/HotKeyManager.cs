@@ -17,6 +17,8 @@ namespace Octofus.Common
 
         private static Dictionary<string, int> HotKeys = new Dictionary<string, int>();
 
+        private static bool IsHookPaused { get; set; }
+
         public static void RegisterHotKeys(Window window, Action<string> setFocusMethod, params string[] keys)
         {
             SetFocusMethod = setFocusMethod;

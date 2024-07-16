@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using Octofus.Data;
 using Octofus.Options.Configuration;
@@ -13,11 +15,14 @@ namespace Octofus.Views.Configuration
     {
         private ConfigurationModel Model { get; set; }
 
+        private List<AccountKey> KeyList { get; set; }
+
         private List<string> Accounts { get; set; }
 
         public ConfigurationView()
         {
             InitializeComponent();
+            KeyList = new List<AccountKey>();
         }
 
         public void FillView(List<string> accounts, Settings configuration)
@@ -25,10 +30,11 @@ namespace Octofus.Views.Configuration
             Accounts = accounts;
             foreach (var account in configuration.Characters)
             {
-                stackPanel.Children.Add(new AccountKey(accounts, account.Name, account.Key)
-                {
-                    Margin = new Thickness(5)
-                });
+                var accountKey = new AccountKey(accounts, account.Name, account.Key, account.ImagePath);
+
+                accountKey.RemoveRequested += OnRemoveAccount;
+                KeyList.Add(accountKey);
+                stackPanel.Children.Add(accountKey);
             }
         }
 
@@ -41,9 +47,9 @@ namespace Octofus.Views.Configuration
                 if(child is AccountKey accountKey)
                 {
                     var result = accountKey.GetAccountBinding();
-                    if(result.Item1 != null && result.Item2!= null)
+                    if(result != null)
                     {
-                        settings.Add(new CharacterSettings { Key = result.Item1, AccountName = result.Item2 });
+                        settings.Add(new CharacterSettings { Key = result.Key, AccountName = result.AccountName, ImagePath = result.ImagePath});
                     }
                 }
             }
@@ -53,10 +59,30 @@ namespace Octofus.Views.Configuration
 
         private void OnAddAccount(object sender, RoutedEventArgs e)
         {
-            stackPanel.Children.Add(new AccountKey(Accounts, string.Empty, string.Empty)
+            var accountKey = new AccountKey(Accounts, string.Empty, string.Empty, string.Empty);
+
+            accountKey.RemoveRequested += OnRemoveAccount;
+            KeyList.Add(accountKey);
+            stackPanel.Children.Add(accountKey);
+        }
+
+        private void OnRemoveAccount(object sender, EventArgs e)
+        {
+            if (sender is AccountKey item)
             {
-                Margin = new Thickness(5)
-            });
+                KeyList.Remove(item);
+                stackPanel.Children.Remove(item);
+            }
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            foreach(var key in KeyList)
+            {
+                key.RemoveRequested -= OnRemoveAccount;
+            }
+
+            base.OnClosing(e);
         }
     }
 }

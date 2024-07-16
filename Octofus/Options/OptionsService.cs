@@ -45,7 +45,8 @@ namespace Octofus.Options
                 {
                     Key = characterSetting.Key,
                     Name = characterSetting.AccountName,
-                    Position = cptr
+                    Position = cptr,
+                    ImagePath = characterSetting.ImagePath
                 });
 
                 cptr++;

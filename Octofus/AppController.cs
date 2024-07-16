@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
@@ -24,18 +23,49 @@ namespace Octofus
 
         private VisualizerView _visualizer;
 
+        private ConfigurationViewModel _configurationViewModel;
+
+        public AppController()
+        {
+            System.Windows.Application.Current.Startup += Current_Startup; 
+        }
+
+        private void Current_Startup(object sender, StartupEventArgs e)
+        {
+            System.Windows.Application.Current.Startup -= Current_Startup;
+            System.Windows.Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Octofus;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute)
+            });
+        }
+
         public void Start()
         {
             InitializeNotifier();
             LoadConfiguration();
 
-            _visualizer = new VisualizerView(new Data.WindowPosition { Left = _configuration.Visualizer.Left, Top = _configuration.Visualizer.Top });
+            _visualizer = new VisualizerView(new Data.WindowPosition { Left = _configuration.Visualizer.Left, Top = _configuration.Visualizer.Top }, this);
             _visualizer.Show();
 
             _processManager = ProcessManager.GetInstance();
             _processManager.Start(_configuration.Characters);
 
+            RegisterHotKeys();
+        }
+
+        public void RegisterHotKeys()
+        {
             HotKeyManager.RegisterHotKeys(_visualizer, _processManager.SetFocus, _configuration.Characters.Select(x => x.Key).ToArray());
+        }
+
+        public void UnregisterHotKeys() 
+        {
+            HotKeyManager.UnregisterHotKeys();
+        }
+
+        public string GetCharacterImage(string name)
+        {
+            return _configuration.Characters.FirstOrDefault(x => x.Name == name).ImagePath;
         }
 
         private void InitializeNotifier()
@@ -45,7 +75,7 @@ namespace Octofus
             var notifier = new NotifyIcon();
             notifier.Icon = new Icon(iconPath);
             notifier.ContextMenu = new ContextMenu();
-            notifier.ContextMenu.MenuItems.Add(new MenuItem("Configurer", OnConfigure));
+            notifier.ContextMenu.MenuItems.Add(new MenuItem("Configuration", OnConfigure));
             notifier.ContextMenu.MenuItems.Add(new MenuItem("-"));
             notifier.ContextMenu.MenuItems.Add(new MenuItem("Fermer", OnQuit));
             notifier.Visible = true;
@@ -72,14 +102,14 @@ namespace Octofus
         {
             var accounts = _processManager.GetRunningAccounts();
 
-            var configurationViewModel = new ConfigurationViewModel(this);
-            configurationViewModel.FillViewModel(accounts, _configuration);
-            configurationViewModel.Show();
+            _configurationViewModel = new ConfigurationViewModel(this);
+            _configurationViewModel.FillViewModel(accounts, _configuration);
+            _configurationViewModel.Show();
         }
 
         private void Reload()
         {
-            HotKeyManager.UnregisterHotKeys();
+            UnregisterHotKeys();
             _processManager.Stop();
 
             LoadConfiguration();
@@ -87,12 +117,17 @@ namespace Octofus
             _processManager = ProcessManager.GetInstance();
             _processManager.Start(_configuration.Characters);
 
-            HotKeyManager.RegisterHotKeys(_visualizer, _processManager.SetFocus, _configuration.Characters.Select(x => x.Key).ToArray());
+            RegisterHotKeys();
         }
 
         private void OnQuit(object sender, EventArgs e)
         {
-            HotKeyManager.UnregisterHotKeys();
+            if(_configurationViewModel != null)
+            {
+                _configurationViewModel.Close();
+            }
+
+            UnregisterHotKeys();
             _processManager.Stop();
             _visualizer.Close();
         }
