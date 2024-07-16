@@ -53,7 +53,12 @@ namespace Octofus.Views.Configuration.SubView
             }
 
             button.Content = key;
-            items.Add(accountName);
+
+            if (!items.Contains(accountName))
+            {
+                items.Add(accountName);
+            }
+
             comboBox.ItemsSource = items;
             comboBox.Text = accountName;
             comboBox.SelectionChanged += ComboBox_SelectionChanged;
