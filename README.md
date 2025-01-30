@@ -15,7 +15,7 @@ Certaines illustrations sont la propriété d'Ankama Studio et de Dofus - Tous d
 
 ## Téléchargement
 
-Télécharger la **dernière version stable** [ici](https://github.com/veeenu/eldenring-practice-tool/releases/latest).
+Télécharger la **dernière version stable** [ici](https://github.com/rls606/Octofus/releases/tag/v1.0).
 
 ## Conseil d'utilsiation
 
